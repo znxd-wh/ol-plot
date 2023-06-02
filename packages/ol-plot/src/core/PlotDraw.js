@@ -19,7 +19,7 @@ import * as Plots from '../Geometry';
 import * as PlotTypes from '../utils/PlotTypes';
 
 class PlotDraw extends Observable {
-  constructor (map, params, ctx) {
+  constructor(map, params, ctx) {
     super();
     if (map && map instanceof Map) {
       this.map = map;
@@ -104,7 +104,7 @@ class PlotDraw extends Observable {
    * @param _params
    * @returns {*}
    */
-  createPlot (type, points, _params) {
+  createPlot(type, points, _params) {
     let params = _params || {};
     switch (type) {
       case PlotTypes.TEXTAREA:
@@ -161,11 +161,15 @@ class PlotDraw extends Observable {
         return new Plots.TriangleFlag([], points, params);
       case PlotTypes.CURVEFLAG:
         return new Plots.CurveFlag([], points, params);
+      case PlotTypes.RECTINCLINED1:
+        return new Plots.RectInclined1([], points, params)
+      case PlotTypes.RECTINCLINED2:
+        return new Plots.RectInclined2([], points, params)
     }
     return null;
   }
 
-  active (type, params = {}) {
+  active(type, params = {}) {
     this.activate(type, params);
     console.warn('[ol-plot]: active 方法即将废弃，请使用 activate');
   }
@@ -192,7 +196,7 @@ class PlotDraw extends Observable {
   /**
    * 激活交互工具
    */
-  activeInteraction () {
+  activeInteraction() {
     this.drawInteraction_ = new Draw({
       style: new Style({
         fill: new Fill({
@@ -222,7 +226,7 @@ class PlotDraw extends Observable {
    * 绘制结束
    * @param event
    */
-  textAreaDrawEnd (event) {
+  textAreaDrawEnd(event) {
     if (event && event.feature) {
       this.map.removeInteraction(this.drawInteraction_);
       const extent = event.feature.getGeometry().getExtent();
@@ -251,7 +255,7 @@ class PlotDraw extends Observable {
     }
   }
 
-  disActive () {
+  disActive() {
     this.deactivate();
     console.warn('[ol-plot]: disActive 方法即将废弃，请使用 deactivate');
   }
@@ -277,7 +281,7 @@ class PlotDraw extends Observable {
    * PLOT是否处于激活状态
    * @returns {boolean}
    */
-  isDrawing () {
+  isDrawing() {
     return !!this.plotType;
   }
 
@@ -286,7 +290,7 @@ class PlotDraw extends Observable {
    * 激活工具后第一次点击事件
    * @param event
    */
-  mapFirstClickHandler (event) {
+  mapFirstClickHandler(event) {
     this.map.un('click', this.mapFirstClickHandler);
     this.points.push(event.coordinate);
     this.plot = this.createPlot(this.plotType, this.points, this.plotParams);
@@ -319,7 +323,7 @@ class PlotDraw extends Observable {
    * @param event
    * @returns {boolean}
    */
-  mapNextClickHandler (event) {
+  mapNextClickHandler(event) {
     if (!this.plot.freehand) {
       if (MathDistance(event.coordinate, this.points[this.points.length - 1]) < 0.0001) {
         return false;
@@ -339,7 +343,7 @@ class PlotDraw extends Observable {
    * 地图双击事件处理
    * @param event
    */
-  mapDoubleClickHandler (event) {
+  mapDoubleClickHandler(event) {
     event.preventDefault();
     this.plot.finishDrawing();
     this.drawEnd(event);
@@ -351,7 +355,7 @@ class PlotDraw extends Observable {
    * @param event
    * @returns {boolean}
    */
-  mapMouseMoveHandler (event) {
+  mapMouseMoveHandler(event) {
     let coordinate = event.coordinate;
     if (MathDistance(coordinate, this.points[this.points.length - 1]) < 0.0001) {
       return false;
@@ -368,7 +372,7 @@ class PlotDraw extends Observable {
   /**
    * 移除事件监听
    */
-  removeEventHandlers () {
+  removeEventHandlers() {
     this.map.un('click', this.mapFirstClickHandler);
     this.map.un('click', this.mapNextClickHandler);
     this.map.un('pointermove', this.mapMouseMoveHandler);
@@ -378,7 +382,7 @@ class PlotDraw extends Observable {
   /**
    * 绘制结束
    */
-  drawEnd (event) {
+  drawEnd(event) {
     this.dispatchEvent(new PlotEvent('drawEnd', {
       originalEvent: event,
       feature: this.feature
@@ -392,7 +396,7 @@ class PlotDraw extends Observable {
   /**
    * 添加要素
    */
-  addFeature () {
+  addFeature() {
     this.feature = new Feature(this.plot);
     if (this.feature && this.drawLayer) {
       this.drawLayer.getSource().addFeature(this.feature);
@@ -402,7 +406,7 @@ class PlotDraw extends Observable {
   /**
    * 取消激活地图交互工具
    */
-  deactiveMapTools () {
+  deactiveMapTools() {
     const interactions = this.map.getInteractions().getArray();
     interactions.every(item => {
       if (item instanceof DoubleClickZoom) {
@@ -419,7 +423,7 @@ class PlotDraw extends Observable {
    * 激活已取消的地图工具
    * 还原之前状态
    */
-  activateMapTools () {
+  activateMapTools() {
     if (this.dblClickZoomInteraction) {
       this.map.addInteraction(this.dblClickZoomInteraction);
       this.dblClickZoomInteraction = null;
